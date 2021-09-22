@@ -34,7 +34,7 @@ Este es el repositorio de la práctica 1 de IPM, curso 2021/22.
   * Nombre: Eduardo
   * Apellidos Juaristi Pérez
   * Login UDC: e.juaristi
-  * Login Github: ?
+  * Login Github: ejuaristi
 
 
 ## Enunciado
