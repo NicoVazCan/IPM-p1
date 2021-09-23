@@ -1,10 +1,11 @@
 Busqueda de la persona a consultar información o contactos:
-acordamos que los datos sobre una persona se introduciran en una única línea para simplificar el proceso de busqueda, pudiendo omitir alguno de los datos para obtener todas las coincidencias.
-Cuando varias personas se llamen y apellidan igual se distinguirá con su DNI en los resultados, pudiendo consultar más información sobre cada uno para cercionarse de quien es.
+acordamos que el nombre y apellido se introducira por separado para simplificar el proceso de busqueda, pudiendo omitir alguno de los datos para obtener todas las coincidencias.
+Cuando varias personas se llamen y apellidan igual se tendra que consultar más información sobre cada uno para cercionarse de quien es debido a que el servidor no contiene ningún identificador sencillo para distinguir distintos usuarios, el unico que tiene para la busqueda es excesivamente largo para facilitar la misma.
 Debido a la limitación de memoría de la base de datos y a no mostrar todos los datos juntos en pantalla, hemos decidido separar los resultados usando páginación ya que, desde el punto de vista del usuario es más fácil explorar las posiblidades pudiendo saltar páginas.
 
 Obtener información personal o contactos en instalaciones:
 hemos decidido que para decidir entre las dos opciones se buscará antes al candidato deseado y luego pulsar el botón de "Info" para su información, y "Contactos" para sus contactos.
+En contactos se podra decidir el rango de fechas de contacto, viniendo de manera predeterminada la fecha del dia actual como la fecha final y la de hace dos semanas como la fecha inicial.
 
 Lista de instalaciones concurridas en información personal, y lista de contactos en contactos covid:
 hemos decidido que para las listas se usará un scroll porque al usar fechas en cada fila, es mucho más facil de navegar subiendo y bajando los resultados en vez de usar paginación, ya que bajar te lleva a resultados más viejos y viceversa.
