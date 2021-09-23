@@ -29,7 +29,7 @@ Este es el repositorio de la práctica 1 de IPM, curso 2021/22.
   * Nombre: Samuel
   * Apellidos: Torres González
   * Login UDC: samuel.torres
-  * Login Github: ?
+  * Login Github: stglez-udc
 
   * Nombre: Eduardo
   * Apellidos Juaristi Pérez
