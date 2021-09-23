@@ -18,8 +18,8 @@ Este es el repositorio de la práctica 1 de IPM, curso 2021/22.
   > momento de darte de alta en _github classroom_.
   
   
-  * Grupo: IPM.42
-  * Horario: 16:30
+  * Grupo: IPM.21
+  * Horario: 8:30
   
   * Nombre: Nicolás
   * Apellidos: Vázquez Cancela
