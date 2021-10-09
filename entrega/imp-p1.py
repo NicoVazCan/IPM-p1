@@ -71,73 +71,104 @@ class View:
 		bxNaveg.add(whd)
 		return bxNaveg
 
+	def CPageSearch(self):
+		sbx = Gtk.Box()
+		gbx = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		gdSearch = Gtk.Grid()
+		gdSearch.set_row_spacing(10)
+		gdSearch.set_column_spacing(10)
+
+		lbName = Gtk.Label(label="Introduzca un nombre")
+		seName = Gtk.SearchEntry()
+		lbSurname = Gtk.Label(label="Introduzca un apellido")
+		seSurname = Gtk.SearchEntry()
+		btSearch = Gtk.Button(label="Buscar")
+
+		gdSearch.attach(lbName,0,0,1,1)
+		gdSearch.attach(seName,0,1,1,1)
+		gdSearch.attach(lbSurname,4,0,1,1)
+		gdSearch.attach(seSurname,4,1,1,1)
+		gdSearch.attach(btSearch,2,2,2,1)
+
+
+		gbx.pack_start(gdSearch, True, False, 100)
+		sbx.pack_start(gbx, True, False, 0)
+
+		self.pageStack.newPage(sbx, "Search")
+
+	def CUserResult(self, num, data, funBtInfo, funBtCont):
+		bxGrid = Gtk.Box()
+		gdResult = Gtk.Grid()
+		gdResult.set_row_spacing(10)
+		gdResult.set_column_spacing(10)
+		bxGrid.add(gdResult)
+
+		fmResNum = Gtk.Frame(label=num)
+		gdResult.attach(fmResNum, 0,0,1,1)
+
+		fmResNSN = Gtk.Frame(
+			label=data.get("name")+" "+data.get("surname"))
+		gdResult.attach(fmResNSN, 1,0,2,1)
+
+		btInfo = Gtk.Button(label="Info")
+		#btInfo.connect("clicked", funBtInfo, data)
+		gdResult.attach(btInfo, 3,0,1,1)
+		btCont = Gtk.Button(label="Contactos")
+		#btInfo.connect("clicked", funBtCont, data)
+		gdResult.attach(btCont, 3,1,1,1)
+
+		return bxGrid
+
+	def CPageResult(self, listData):
+		MAX_USERS = 3
+		bxCenter = Gtk.Box()
+		bxResult = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		bxCenter.pack_start(bxResult, True, False, 0)
+
+		fmBusNSN = Gtk.Frame(label="Juan")
+		bxResult.pack_start(fmBusNSN, False, False, 0)
+
+		skResult = Gtk.Stack()
+		ssResult = Gtk.StackSwitcher()
+		ssResult.set_stack(skResult)
+		bxResult.pack_start(skResult, False, False, 10)
+		bxResult.pack_end(ssResult, False, False, 10)
+
+		u = 0
+		p = 1
+		for data in listData:
+			if(not(u%MAX_USERS)):
+				bxUsers = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
+			spacing=10)
+				skResult.add_titled(bxUsers, str(p), str(p))
+				p+=1
+			bxUsers.pack_start(
+				self.CUserResult(u, data,
+				 None, None), False, False, 0)
+			u+=1
+
+		self.pageStack.newPage(bxCenter, "Result")
+
 	def __init__(self):
 		window = Gtk.Window(title= "Sistema de control de accesos COVID")
 		window.connect('delete-event' , Gtk.main_quit)
 		
 		wbx = Gtk.Box(spacing=10, orientation=Gtk.Orientation.VERTICAL)
-		
-		wbx.add(self.CCabecera())
-		
+		wbx.add(self.CCabecera())	
 		skPages = Gtk.Stack()
 		wbx.pack_start(skPages, True, True, 0)
-
-		sbx = Gtk.Box()
-		gbx = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-		gdSearch = Gtk.Grid()
-		gdSearch.set_row_spacing(40)
-		gdSearch.set_column_spacing(40)
-
-		lbName = Gtk.Label(label="Introduzca un nombre")
-		seName = Gtk.SearchEntry()
-		lbSubname = Gtk.Label(label="Introduzca un apellido")
-		seSubname = Gtk.SearchEntry()
-		btSearch = Gtk.Button(label="Buscar")
-
-		gdSearch.attach(lbName,0,0,1,1)
-		gdSearch.attach(seName,1,0,1,1)
-		gdSearch.attach(lbSubname,4,0,1,1)
-		gdSearch.attach(seSubname,5,0,1,1)
-		gdSearch.attach(btSearch,2,1,2,1)
-
-
-		gbx.pack_start(gdSearch, True, False, 100)
-		sbx.pack_start(gbx, True, False, 0)
-		
-
-		bxResult = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-		
-		gdResult = Gtk.Grid()
-
-
-		etBusNSN = Gtk.Entry()
-
-		etResNum1 = Gtk.Entry()
-		etResNum1.set_text("1")
-		etResNum2 = Gtk.Entry()
-		etResNum2.set_text("2")
-		etResNum3 = Gtk.Entry()
-		etResNum3.set_text("3")
-
-		etResNSN1 = Gtk.Entry()
-		etResNSN2 = Gtk.Entry()
-		etResNSN3 = Gtk.Entry()
-
-		btInfo1 = Gtk.Button(label="Info")
-		btCont1 = Gtk.Button(label="Contactos")
-		btInfo2 = Gtk.Button(label="Info")
-		btCont2 = Gtk.Button(label="Contactos")
-		btInfo3 = Gtk.Button(label="Info")
-		btCont3 = Gtk.Button(label="Contactos")
-
-
-		bxResult.pack_start(etBusNSN, False, True, 10)
+		exampleBS = [
+			{"name": "A", "surname": "01"},
+			{"name": "B", "surname": "02"},
+			{"name": "C", "surname": "03"},
+			{"name": "D", "surname": "04"},
+			{"name": "E", "surname": "05"},
+			{"name": "F", "surname": "06"},
+			{"name": "G", "surname": "07"},]
 
 		self.pageStack = PageStack(skPages)
-		
-		self.pageStack.newPage(sbx, "Search")
-		self.pageStack.newPage(bxResult, "Result")
-		self.pageStack.newPage(Gtk.Label(label="Lol"), "Label")
+		self.CPageSearch()
+		self.CPageResult(exampleBS)
 		
 		window.add(wbx)
 		
