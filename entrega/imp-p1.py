@@ -8,8 +8,9 @@ from gi.repository import Gtk
 
 #view
 class PageStack:
-	def __init__(self, stack):
+	def __init__(self, stack, window):
 		self.stack = stack
+		self.window = window
 		self.listPages = []
 
 	def getStack(self):
@@ -23,7 +24,7 @@ class PageStack:
 		if(actName != None):
 			self.listPages.append(actName)
 		self.stack.add_named(page, pageName)
-		page.show()
+		self.window.show_all()
 		self.stack.set_visible_child_name(pageName)
 
 	def prevPage(self):
@@ -71,7 +72,7 @@ class View:
 		bxNaveg.add(whd)
 		return bxNaveg
 
-	def CPageSearch(self):
+	def CPageSearch(self, funBtSearch):
 		sbx = Gtk.Box()
 		gbx = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		gdSearch = Gtk.Grid()
@@ -83,6 +84,8 @@ class View:
 		lbSurname = Gtk.Label(label="Introduzca un apellido")
 		seSurname = Gtk.SearchEntry()
 		btSearch = Gtk.Button(label="Buscar")
+		btSearch.connect("clicked", funBtSearch,
+			seName.get_text, seSurname.get_text)
 
 		gdSearch.attach(lbName,0,0,1,1)
 		gdSearch.attach(seName,0,1,1,1)
@@ -95,6 +98,7 @@ class View:
 		sbx.pack_start(gbx, True, False, 0)
 
 		self.pageStack.newPage(sbx, "Search")
+
 
 	def CUserResult(self, num, data, funBtInfo, funBtCont):
 		bxGrid = Gtk.Box()
@@ -119,7 +123,7 @@ class View:
 
 		return bxGrid
 
-	def CPageResult(self, listData):
+	def CPageResult(self, listData, funBtInfo, funBtCont):
 		MAX_USERS = 3
 		bxCenter = Gtk.Box()
 		bxResult = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -144,19 +148,24 @@ class View:
 				p+=1
 			bxUsers.pack_start(
 				self.CUserResult(u, data,
-				 None, None), False, False, 0)
+				 funBtInfo, funBtCont), False, False, 0)
 			u+=1
 
 		self.pageStack.newPage(bxCenter, "Result")
 
+
 	def __init__(self):
-		window = Gtk.Window(title= "Sistema de control de accesos COVID")
-		window.connect('delete-event' , Gtk.main_quit)
-		
+		window = Gtk.Window(title="Sistema de control de accesos Covid-19")
 		wbx = Gtk.Box(spacing=10, orientation=Gtk.Orientation.VERTICAL)
 		wbx.add(self.CCabecera())	
 		skPages = Gtk.Stack()
 		wbx.pack_start(skPages, True, True, 0)
+		self.pageStack = PageStack(skPages, window)
+		window.add(wbx)
+		
+
+class Controller:
+	def searchUser(self, widget, get_name, get_surname):
 		exampleBS = [
 			{"name": "A", "surname": "01"},
 			{"name": "B", "surname": "02"},
@@ -165,16 +174,20 @@ class View:
 			{"name": "E", "surname": "05"},
 			{"name": "F", "surname": "06"},
 			{"name": "G", "surname": "07"},]
+		self.view.CPageResult(exampleBS,
+			self.showInfo, self.showCont)
 
-		self.pageStack = PageStack(skPages)
-		self.CPageSearch()
-		self.CPageResult(exampleBS)
-		
-		window.add(wbx)
-		
-		window.show_all()
-		
+	def showInfo(self, widget, data):
+		pass
 
+	def showCont(self, widget, data):
+		pass
+
+	def __init__(self):
+		self.view = View()
+		self.view.CPageSearch(self.searchUser)
+
+		
 		
 #controller
 '''
@@ -187,7 +200,7 @@ def accesoBD(nombreTabla, pagina):
 	data = r.json()
 	return(data.get(nombreTabla))
 '''
+Controller()
 
-View()
 Gtk.main()
 
