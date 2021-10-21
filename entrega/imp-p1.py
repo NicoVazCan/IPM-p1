@@ -44,6 +44,46 @@ class Model:
 
 		return(lista)
 
+<<<<<<< HEAD
+=======
+#model        PROBLEMA SI LE DAS A HOME PETA LA PAGINA DE RESULTADOS, HABLARLO CON NICO
+class Model:
+	def CompUser(self,name,surname):
+
+		r = requests.get("http://localhost:8080/api/rest/users",
+		headers={"x-hasura-admin-secret":"myadminsecretkey"})
+		data = r.json()
+		lista=data.get("users")
+		i=0
+
+		if name!="":
+			while lista[i]["uuid"]!=lista[-1]["uuid"]:
+				if lista[i]["name"].startswith(name.capitalize()):
+					i=i+1
+				else:
+					lista.remove(lista[i])
+					if i!=0:
+						i=i-1
+			if not lista[i]["name"].startswith(name.capitalize()):
+				lista.remove(lista[i])
+
+
+		i=0
+
+		if surname!="":
+			while lista[i]["uuid"]!=lista[-1]["uuid"]:
+				if lista[i]["surname"].startswith(surname.capitalize()):
+					i=i+1
+				else:
+					lista.remove(lista[i])
+					if i!=0:
+						i=i-1
+			if not lista[i]["surname"].startswith(surname.capitalize()):
+				lista.remove(lista[i])
+
+		return(lista)
+
+>>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 
 #view
 class PageStack:
@@ -75,6 +115,13 @@ class PageStack:
 			self.stack.set_visible_child(
 				self.stack.get_child_by_name(prevName))
 			self.stack.remove(act)
+<<<<<<< HEAD
+=======
+
+	def firstPage(self):
+		if(self.listPages):
+			firstName = self.listPages.pop(0)
+>>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 
 	def firstPage(self):
 		while(self.listPages):
@@ -82,6 +129,11 @@ class PageStack:
 
 
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 class View:
 	def clicked_btBack(self, widget):
 		self.pageStack.prevPage()
@@ -156,8 +208,13 @@ class View:
 		return bxGrid
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	def CPageResult(self, name, surname, listData, funBtInfo, funBtCont):
 		MAX_USERS = 3
+=======
+	def CPageResult(self, listData, funBtInfo, funBtCont):
+		MAX_USERS = 7
+>>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 =======
 	def CPageResult(self, listData, funBtInfo, funBtCont):
 		MAX_USERS = 7
@@ -365,6 +422,7 @@ class View:
 #controller
 class Controller:
 <<<<<<< HEAD
+<<<<<<< HEAD
 	def showUsers(self, widget, get_name, get_surname):
 		nameSearch = get_name().strip()
 		surnameSearch = get_surname().strip()
@@ -372,6 +430,8 @@ class Controller:
 			nameSearch, surnameSearch, 
 			self.model.searchUsers(nameSearch, surnameSearch),
 =======
+=======
+>>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 	def searchUser(self, widget, get_name, get_surname):#poner get_name() para obtener string, get_name no va
 
 		name=get_name()
@@ -381,6 +441,9 @@ class Controller:
 
 
 		self.view.CPageResult(lista,
+<<<<<<< HEAD
+>>>>>>> dda59035424458d5fbcc08c74564203b41c99420
+=======
 >>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 			self.showInfo, self.showCont)
 
@@ -406,6 +469,7 @@ class Controller:
 		self.model = Model()
 		self.view.CPageSearch(self.showUsers)
 
+<<<<<<< HEAD
 #Model
 class Model:
 	def __init__(self):
@@ -491,6 +555,11 @@ class Model:
 
 
 <<<<<<< HEAD
+=======
+
+
+
+>>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 =======
 
 
