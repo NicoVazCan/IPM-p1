@@ -1,95 +1,18 @@
+
 import gi
 import requests
 import qrcode
 from datetime import datetime
+import tempfile
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GdkPixbuf
 
 
-#model        PROBLEMA SI LE DAS A HOME PETA LA PAGINA DE RESULTADOS, HABLARLO CON NICO
-class Model:
-	def CompUser(self,name,surname):
-
-		r = requests.get("http://localhost:8080/api/rest/users",
-		headers={"x-hasura-admin-secret":"myadminsecretkey"})
-		data = r.json()
-		lista=data.get("users")
-		i=0
-
-		if name!="":
-			while lista[i]["uuid"]!=lista[-1]["uuid"]:
-				if lista[i]["name"].startswith(name.capitalize()):
-					i=i+1
-				else:
-					lista.remove(lista[i])
-					if i!=0:
-						i=i-1
-			if not lista[i]["name"].startswith(name.capitalize()):
-				lista.remove(lista[i])
-
-
-		i=0
-
-		if surname!="":
-			while lista[i]["uuid"]!=lista[-1]["uuid"]:
-				if lista[i]["surname"].startswith(surname.capitalize()):
-					i=i+1
-				else:
-					lista.remove(lista[i])
-					if i!=0:
-						i=i-1
-			if not lista[i]["surname"].startswith(surname.capitalize()):
-				lista.remove(lista[i])
-
-		return(lista)
-
-<<<<<<< HEAD
-=======
-#model        PROBLEMA SI LE DAS A HOME PETA LA PAGINA DE RESULTADOS, HABLARLO CON NICO
-class Model:
-	def CompUser(self,name,surname):
-
-		r = requests.get("http://localhost:8080/api/rest/users",
-		headers={"x-hasura-admin-secret":"myadminsecretkey"})
-		data = r.json()
-		lista=data.get("users")
-		i=0
-
-		if name!="":
-			while lista[i]["uuid"]!=lista[-1]["uuid"]:
-				if lista[i]["name"].startswith(name.capitalize()):
-					i=i+1
-				else:
-					lista.remove(lista[i])
-					if i!=0:
-						i=i-1
-			if not lista[i]["name"].startswith(name.capitalize()):
-				lista.remove(lista[i])
-
-
-		i=0
-
-		if surname!="":
-			while lista[i]["uuid"]!=lista[-1]["uuid"]:
-				if lista[i]["surname"].startswith(surname.capitalize()):
-					i=i+1
-				else:
-					lista.remove(lista[i])
-					if i!=0:
-						i=i-1
-			if not lista[i]["surname"].startswith(surname.capitalize()):
-				lista.remove(lista[i])
-
-		return(lista)
-
->>>>>>> dda59035424458d5fbcc08c74564203b41c99420
-
 #view
 class PageStack:
-	def __init__(self, stack, window):
+	def __init__(self, stack):
 		self.stack = stack
-		self.window = window
 		self.listPages = []
 
 	def getStack(self):
@@ -103,7 +26,6 @@ class PageStack:
 		if(actName != None):
 			self.listPages.append(actName)
 		self.stack.add_named(page, pageName)
-		self.window.show_all()
 		self.stack.set_visible_child_name(pageName)
 
 	def prevPage(self):
@@ -115,25 +37,11 @@ class PageStack:
 			self.stack.set_visible_child(
 				self.stack.get_child_by_name(prevName))
 			self.stack.remove(act)
-<<<<<<< HEAD
-=======
-
-	def firstPage(self):
-		if(self.listPages):
-			firstName = self.listPages.pop(0)
->>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 
 	def firstPage(self):
 		while(self.listPages):
 			self.prevPage()
 
-
-
-<<<<<<< HEAD
-=======
-
-
->>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 class View:
 	def clicked_btBack(self, widget):
 		self.pageStack.prevPage()
@@ -177,48 +85,14 @@ class View:
 
 
 		gbx.pack_start(gdSearch, True, False, 100)
-		sbx.pack_start(gbx, True, False, 0)
+		sbx.pack_start(gbx, True, False, 20)
 
+		sbx.show_all()
 		self.pageStack.newPage(sbx, "Search")
 
 
-	def CUserResult(self, num, data, funBtInfo, funBtCont):
-		bxGrid = Gtk.Box()
-		gdResult = Gtk.Grid()
-		gdResult.set_row_spacing(10)
-		gdResult.set_column_spacing(10)
-		bxGrid.add(gdResult)
-
-		fmResNum = Gtk.Frame()
-		fmResNum.add(Gtk.Label(label=num))
-		gdResult.attach(fmResNum, 0,0,1,1)
-
-		fmResNSN = Gtk.Frame()
-		fmResNSN.add(Gtk.Label(
-			label=data.get("name")+" "+data.get("surname")))
-		gdResult.attach(fmResNSN, 1,0,2,1)
-
-		btInfo = Gtk.Button(label="Info")
-		btInfo.connect("clicked", funBtInfo, data)
-		gdResult.attach(btInfo, 3,0,1,1)
-		btCont = Gtk.Button(label="Contactos")
-		btCont.connect("clicked", funBtCont, data)
-		gdResult.attach(btCont, 3,1,1,1)
-
-		return bxGrid
-
-<<<<<<< HEAD
-<<<<<<< HEAD
 	def CPageResult(self, name, surname, listData, funBtInfo, funBtCont):
-		MAX_USERS = 3
-=======
-	def CPageResult(self, listData, funBtInfo, funBtCont):
-		MAX_USERS = 7
->>>>>>> dda59035424458d5fbcc08c74564203b41c99420
-=======
-	def CPageResult(self, listData, funBtInfo, funBtCont):
-		MAX_USERS = 7
->>>>>>> dda59035424458d5fbcc08c74564203b41c99420
+		MAX_USERS = 10
 		bxCenter = Gtk.Box()
 		bxResult = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		bxCenter.pack_start(bxResult, True, False, 0)
@@ -227,26 +101,76 @@ class View:
 		fmBusNSN.add(Gtk.Label(label=name + " " + surname))
 		bxResult.pack_start(fmBusNSN, False, False, 0)
 
-		skResult = Gtk.Stack()
-		ssResult = Gtk.StackSwitcher()
-		ssResult.set_stack(skResult)
-		bxResult.pack_start(skResult, False, False, 10)
-		bxResult.pack_end(ssResult, False, False, 10)
+		if listData:
+			swUsers = Gtk.ScrolledWindow()
+			swUsers.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+			swUsers.set_propagate_natural_height(True)
+			skResult = Gtk.Stack()
+			skResult.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+			swUsers.add(skResult)
+			ssResult = Gtk.StackSwitcher()
+			ssResult.set_stack(skResult)
+			ssResult.set_halign(Gtk.Align.CENTER)
+			bxResult.pack_start(swUsers, False, False, 20)
+			bxResult.pack_end(ssResult, False, True, 20)
 
-		u = 0
-		p = 1
-		for data in listData:
-			if(not(u%MAX_USERS)):
-				bxUsers = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
-			spacing=10)
-				skResult.add_titled(bxUsers, str(p), str(p))
-				p+=1
-			bxUsers.pack_start(
-				self.CUserResult(u, data,
-				 funBtInfo, funBtCont), False, False, 0)
-			u+=1
+			u = 0
+			p = 1
+			for data in listData:
+				if(not(u%MAX_USERS)):
+					fbUsers = Gtk.FlowBox()
+					skResult.add_titled(fbUsers, str(p), str(p))
+					fbUsers.set_valign(Gtk.Align.START)
+					fbUsers.set_max_children_per_line(3)
+					fbUsers.set_min_children_per_line(3)
+					fbUsers.set_row_spacing(20)
+					fbUsers.set_homogeneous(True)
+					fbUsers.set_selection_mode(Gtk.SelectionMode.NONE)
+					p+=1
 
+				fmResNum = Gtk.Frame()
+				fmResNum.add(Gtk.Label(label=str(u)))
+				fbUsers.add(fmResNum)
+
+				fmResNSN = Gtk.Frame()
+				aux = Gtk.Label(
+					label=data.get("name")+" "+
+					data.get("surname"))
+				aux.set_line_wrap(True)
+				fmResNSN.add(aux)
+				fbUsers.add(fmResNSN)
+
+				gdButtons = Gtk.Grid()
+				btInfo = Gtk.Button(label="Info")
+				btInfo.connect("clicked", funBtInfo, data)
+				gdButtons.attach(btInfo, 0,0,1,1)
+				btCont = Gtk.Button(label="Contactos")
+				btCont.connect("clicked", funBtCont, data)
+				gdButtons.attach(btCont, 0,1,1,1)
+				fbUsers.add(gdButtons)
+
+				u+=1
+		else:
+			bxResult.pack_start(
+				Gtk.Label(label="No se encontro ninguna coincidencia."),
+				False, False, 20)
+
+		bxCenter.show_all()
 		self.pageStack.newPage(bxCenter, "Result")
+
+	def date2str(self, date):
+		return date.strftime("%d/%m/%y %H:%M:%S")
+
+	def QrWidget(self, dataUser):
+		tmp = tempfile.NamedTemporaryFile(suffix=".png")
+		qrcode.make(dataUser.get("name")+","+
+			dataUser.get("surname")+","+
+			dataUser.get("uuid")).save(tmp)
+		img = Gtk.Image.new_from_file(tmp.name)
+		pixelbuf = img.get_pixbuf()
+		pixelbuf = pixelbuf.scale_simple(82, 82, GdkPixbuf.InterpType.BILINEAR)
+		img.set_from_pixbuf(pixelbuf)
+		return img
 
 	def CPageInfo(self, dataUser, listLogAcc):
 		bxCenter = Gtk.Box()
@@ -259,29 +183,32 @@ class View:
 		gdDataUser.attach(
 			Gtk.Label(label="Informacion de "+dataUser.get("name")+" "+dataUser.get("surname")),
 			0,0,3,1)
-		gdDataUser.attach(
-			Gtk.Label(label="Nombre corto:"), 0,1,1,1)
-		gdDataUser.attach(
-			Gtk.Label(label=dataUser.get("phone")), 1,1,1,1)
-		gdDataUser.attach(
-			Gtk.Label(label="Telefono:"), 0,2,1,1)
-		gdDataUser.attach(
-			Gtk.Label(label=dataUser.get("phone")), 1,2,1,1)
-		gdDataUser.attach(
-			Gtk.Label(label="Email:"), 0,3,1,1)
-		gdDataUser.attach(
-			Gtk.Label(label=dataUser.get("email")), 1,3,1,1)
-		gdDataUser.attach(
-			Gtk.Label(label="Vacunado:"), 0,4,1,1)
-		gdDataUser.attach(
-			Gtk.Label(label=dataUser.get("is_vaccinated")), 1,4,3,3)
-		dataUser.get("qr").save("qr.png")
-		img = Gtk.Image.new_from_file("qr.png")
-		pixelbuf = img.get_pixbuf()
-		pixelbuf = pixelbuf.scale_simple(82, 82, GdkPixbuf.InterpType.BILINEAR)
-		img.set_from_pixbuf(pixelbuf)
-		gdDataUser.attach(img, 2,1,3,3)
-		
+		aux = Gtk.Label(label="Nombre corto:")
+		aux.set_halign(Gtk.Align.START)
+		gdDataUser.attach(aux, 0,1,1,1)
+		aux = Gtk.Label(label=dataUser.get("username"))
+		aux.set_halign(Gtk.Align.START)
+		gdDataUser.attach(aux, 1,1,1,1)
+		aux = Gtk.Label(label="Telefono:")
+		aux.set_halign(Gtk.Align.START)
+		gdDataUser.attach(aux, 0,2,1,1)
+		aux = Gtk.Label(label=dataUser.get("phone"))
+		aux.set_halign(Gtk.Align.START)
+		gdDataUser.attach(aux, 1,2,1,1)
+		aux = Gtk.Label(label="Email:")
+		aux.set_halign(Gtk.Align.START)
+		gdDataUser.attach(aux, 0,3,1,1)
+		aux = Gtk.Label(label=dataUser.get("email"))
+		aux.set_halign(Gtk.Align.START)
+		gdDataUser.attach(aux, 1,3,1,1)
+		aux = Gtk.Label(label="Vacunado:")
+		aux.set_halign(Gtk.Align.START)
+		gdDataUser.attach(aux, 0,4,1,1)
+		aux = Gtk.Label(label=dataUser.get("is_vaccinated"))
+		aux.set_halign(Gtk.Align.START)
+		gdDataUser.attach(aux, 1,4,1,1)
+		gdDataUser.attach(self.QrWidget(dataUser), 2,1,3,3)
+
 		fmLogAcc = Gtk.Frame(label="Registro de accesos")
 		bxLogAcc = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		fmLogAcc.add(bxLogAcc)
@@ -290,13 +217,23 @@ class View:
 		fbColumnName.set_valign(Gtk.Align.START)
 		fbColumnName.set_max_children_per_line(4)
 		fbColumnName.set_min_children_per_line(4)
+		fbColumnName.set_homogeneous(True)
+		#fbColumnName.set_column_spacing(20)
 		fbColumnName.set_selection_mode(Gtk.SelectionMode.NONE)
 		bxLogAcc.pack_start(fbColumnName, False, False, 0)
 
-		fbColumnName.add(Gtk.Label(label="Instalación"))
-		fbColumnName.add(Gtk.Label(label="Fecha de entrada"))
-		fbColumnName.add(Gtk.Label(label="Fecha de salida"))
-		fbColumnName.add(Gtk.Label(label="Temperatura"))
+		aux = Gtk.Label(label="Instalación")
+		aux.set_halign(Gtk.Align.START)
+		fbColumnName.add(aux)
+		aux = Gtk.Label(label="Fecha de entrada")
+		aux.set_halign(Gtk.Align.START)
+		fbColumnName.add(aux)
+		aux = Gtk.Label(label="Fecha de salida")
+		aux.set_halign(Gtk.Align.START)
+		fbColumnName.add(aux)
+		aux = Gtk.Label(label="Temperatura")
+		aux.set_halign(Gtk.Align.START)
+		fbColumnName.add(aux)
 
 		swLogAcc = Gtk.ScrolledWindow()
 		swLogAcc.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -312,13 +249,13 @@ class View:
 		fbAcc.set_selection_mode(Gtk.SelectionMode.NONE)
 
 		for logAcc in listLogAcc:
-			aux = Gtk.Label(label=logAcc.get("facility"))
+			aux = Gtk.Label(label=logAcc.get("facility").get("name"))
 			aux.set_line_wrap(True)
 			fbAcc.add(aux)
-			aux = Gtk.Label(label=logAcc.get("timein"))
+			aux = Gtk.Label(label=self.date2str(logAcc.get("timein")))
 			aux.set_line_wrap(True)
 			fbAcc.add(aux)
-			aux = Gtk.Label(label=logAcc.get("timeout"))
+			aux = Gtk.Label(label=self.date2str(logAcc.get("timeout")))
 			aux.set_line_wrap(True)
 			fbAcc.add(aux)
 			aux = Gtk.Label(label=logAcc.get("temperature"))
@@ -327,51 +264,89 @@ class View:
 
 		bxInfo.pack_start(fmLogAcc, False, False, 10)
 
+		bxCenter.show_all()
 		self.pageStack.newPage(bxCenter, "Info")
 
-	def CalendarUpdate(self, widget, bxDest, cdDesde, cdHasta,
+	def CalendarUpdate(self, widget, skDest, cdDesde, cdHasta,
 		dataUser, listLogContAll, funGetListFiltrada):
 		(year, month, day) = cdDesde.get_date()
+		month += 1
 		dtDesde = datetime(year, month, day)
 		(year, month, day) = cdHasta.get_date()
+		month += 1
 		dtHasta = datetime(year, month, day)
 
-		'''newListLogCont = funGetListFiltrada(listLogContAll, dtDesde, dtHasta)
+		prevChild = skDest.get_visible_child()
+		bxDest = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		skDest.add(bxDest)
+		skDest.set_visible_child(bxDest)
+		if prevChild != None: skDest.remove(prevChild)
+
+
+		newListLogCont = funGetListFiltrada(listLogContAll, dtDesde, dtHasta)
+
+		if(newListLogCont == []):
+			lbMsg = Gtk.Label()
+			if(dtHasta < dtDesde):
+				lbMsg.set_label("Debe poner una fecha desde donde quiere buscar anterior a la de hasta.")
+			else:
+				lbMsg.set_label("No se encontró nada entre esas fechas.")
+
+			bxDest.pack_start(lbMsg, False, False, 20)
+			bxDest.show_all()
+			return
 
 		swLogCont = Gtk.ScrolledWindow()
 		swLogCont.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
 		swLogCont.set_propagate_natural_height(True)
-		bxLogCont.pack_start(swLogAcc, False, False, 0)
+		fbColumnName = Gtk.FlowBox()
+		fbColumnName.set_valign(Gtk.Align.START)
+		fbColumnName.set_max_children_per_line(3)
+		fbColumnName.set_min_children_per_line(3)
+		fbColumnName.set_selection_mode(Gtk.SelectionMode.NONE)
+		bxDest.pack_start(fbColumnName, False, False, 0)
+
+		aux = Gtk.Label(label="Persona")
+		aux.set_halign(Gtk.Align.START)
+		fbColumnName.add(aux)
+		aux = Gtk.Label(label="Instalación")
+		aux.set_halign(Gtk.Align.START)
+		fbColumnName.add(aux)
+		aux = Gtk.Label(label="Fecha de contacto")
+		aux.set_halign(Gtk.Align.START)
+		fbColumnName.add(aux)
+
+		bxDest.pack_start(swLogCont, False, False, 0)
 
 		fbCont = Gtk.FlowBox()
-		swLogCont.add(fbAcc)
+		swLogCont.add(fbCont)
 		fbCont.set_valign(Gtk.Align.START)
 		fbCont.set_max_children_per_line(3)
 		fbCont.set_min_children_per_line(3)
 		fbCont.set_homogeneous(True)
 		fbCont.set_selection_mode(Gtk.SelectionMode.NONE)
 
-		for logAcc in listLogAcc:
-			aux = Gtk.Label(label=logAcc.get("facility"))
+
+		for logCont in newListLogCont:
+			aux = Gtk.Label(label=logCont.get("user").get("name")+" "+logCont.get("user").get("surname"))
 			aux.set_line_wrap(True)
-			fbAcc.add(aux)
-			aux = Gtk.Label(label=logAcc.get("timein"))
+			aux.set_halign(Gtk.Align.START)
+			fbCont.add(aux)
+			aux = Gtk.Label(label=logCont.get("facility").get("name"))
 			aux.set_line_wrap(True)
-			fbAcc.add(aux)
-			aux = Gtk.Label(label=logAcc.get("timeout"))
+			aux.set_halign(Gtk.Align.START)
+			fbCont.add(aux)
+			aux = Gtk.Label(label=self.date2str(logCont.get("timestamp")))
 			aux.set_line_wrap(True)
-			fbAcc.add(aux)
-			aux = Gtk.Label(label=logAcc.get("temperature"))
-			aux.set_line_wrap(True)
-			fbAcc.add(aux)'''
-		
+			aux.set_halign(Gtk.Align.START)
+			fbCont.add(aux)
+		bxDest.show_all()
+
 
 	def CPageCont(self, dataUser, listLogContAll, funGetListFiltrada):
 		bxCenter = Gtk.Box()
 		bxCont = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-		#bxCenter.pack_start(bxCont, True, False, 0)
 		bxFecha = Gtk.Box()
-		#bxCont.pack_start(bxFecha, False, False, 0)
 		dtToday = datetime.today()
 
 		bxCont.add(Gtk.Label(
@@ -394,187 +369,232 @@ class View:
 		bxFecha.pack_end(edHasta, False, False, 60)
 		bxCont.add(bxFecha)
 
-		bxLogCont = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		fmLogCont = Gtk.Frame(label="Registro de contactos")
+		skLogCont = Gtk.Stack()
+		fmLogCont.add(skLogCont)
+		bxCont.pack_start(fmLogCont, False, False, 20)
 
-		cdDesde.connect("day-selected", self.CalendarUpdate, bxLogCont,
+		cdDesde.connect("day-selected", self.CalendarUpdate, skLogCont,
 			cdDesde, cdHasta, dataUser, listLogContAll, funGetListFiltrada)
-		cdHasta.connect("day-selected", self.CalendarUpdate, bxLogCont,
+		cdHasta.connect("day-selected", self.CalendarUpdate, skLogCont,
 			cdDesde, cdHasta, dataUser, listLogContAll, funGetListFiltrada)
 
-		
+		self.CalendarUpdate(None, skLogCont, cdDesde, cdHasta,
+			dataUser, listLogContAll, funGetListFiltrada)
 
+		bxCont.show_all()
 		self.pageStack.newPage(bxCont, "Contactos")
+
+	def CPageError(self, status):
+		bxError = Gtk.Box()
+		bxError = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		error = Gtk.Label()
+
+		if status==400:
+			error.set_label("Error "+ str(status) + "\n Bad Request")
+		elif status==401:
+			error.set_label("Error "+ str(status) + "\n Unauthorized")
+		elif status==404:
+			error.set_label("Error "+ str(status) + "\n Not Found")
+		elif status==408:
+			error.set_label("Error "+ str(status) + "\n Request Timeout")
+		elif status==500:
+			error.set_label("Error "+ str(status) + "\n Internal Server Error")
+		elif status==502:
+			error.set_label("Error "+ str(status) + "\n Bad Gateaway")
+		elif status==504:
+			error.set_label("Error "+ str(status) + "\n Gateaway Timeout")
+		else:
+			error.set_label("Error "+ str(status))
+
+		bxError.add(error)
+		bxError.show_all()
+		self.pageStack.newPage(bxError, "Error")
 
 
 	def __init__(self):
 		window = Gtk.Window(title="Sistema de control de accesos Covid-19")
 		window.connect("destroy", Gtk.main_quit)
 		wbx = Gtk.Box(spacing=10, orientation=Gtk.Orientation.VERTICAL)
-
-		window.connect('delete-event' , Gtk.main_quit)#añadi esto que sino no se cerraba aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-
 		wbx.add(self.CCabecera())
 		skPages = Gtk.Stack()
 		wbx.pack_start(skPages, True, True, 0)
-		self.pageStack = PageStack(skPages, window)
+		self.pageStack = PageStack(skPages)
 		window.add(wbx)
+		window.show_all()
+
+
 
 #controller
 class Controller:
-<<<<<<< HEAD
-<<<<<<< HEAD
 	def showUsers(self, widget, get_name, get_surname):
 		nameSearch = get_name().strip()
 		surnameSearch = get_surname().strip()
-		self.view.CPageResult(
-			nameSearch, surnameSearch, 
-			self.model.searchUsers(nameSearch, surnameSearch),
-=======
-=======
->>>>>>> dda59035424458d5fbcc08c74564203b41c99420
-	def searchUser(self, widget, get_name, get_surname):#poner get_name() para obtener string, get_name no va
+		(lista,status)=self.model.CompUser(nameSearch, surnameSearch)
 
-		name=get_name()
-		surname=get_surname()
-
-		lista=self.model.CompUser(name,surname)
-
-
-		self.view.CPageResult(lista,
-<<<<<<< HEAD
->>>>>>> dda59035424458d5fbcc08c74564203b41c99420
-=======
->>>>>>> dda59035424458d5fbcc08c74564203b41c99420
-			self.showInfo, self.showCont)
+		if status!=200:
+			self.view.CPageError(status)
+		else:
+			self.view.CPageResult(nameSearch, surnameSearch,
+				lista,
+				self.showInfo, self.showCont)
 
 	def showInfo(self, widget, dataUser):
-		listLogAcc = self.model.searchLogAcc(dataUser)
+		(lista,status) = self.model.searchLogAcc(dataUser)
 
-		self.view.CPageInfo(dataUser, listLogAcc)
+		if status!=200:
+			self.view.CPageError(status)
+		else:
+			self.view.CPageInfo(dataUser, lista)
 
 	def showCont(self, widget, dataUser):
-		listLogContAll = self.model.searchCont(dataUser)
+		(lista,status) = self.model.searchCont(dataUser)
 
-		self.view.CPageCont(dataUser, listLogContAll, self.giveCont)
+		if status!=200:
+			self.view.CPageError(status)
+		else:
+			self.view.CPageCont(dataUser, lista, self.giveCont)
 
 	def giveCont(self, listLogContAll, dateIni, dateFin):
 
 
-		self.model.filtrarCont(listLogContAll, dateIni, dateFin)
-			
+		return self.model.filtrarCont(listLogContAll, dateIni, dateFin)
+
 
 	def __init__(self):
-		self.model= Model()
 		self.view = View()
 		self.model = Model()
 		self.view.CPageSearch(self.showUsers)
 
-<<<<<<< HEAD
+
+
 #Model
 class Model:
 	def __init__(self):
 		pass
 
-	def searchUsers(self, name, surname):
-		img = qrcode.make("Arturo"+","+"Blanco"+","+"deca9539-3801-4df3-bdcc-d16c629c9f2d")
-		exampleBS = [
-			{"uuid":"deca9539-3801-4df3-bdcc-d16c629c9f2d","username":"goldenbird345","name":"Arturo","surname":"Blanco","email":"arturo.blanco@example.com","phone":"948-158-045","is_vaccinated":"No", "qr":img},
-			{"uuid":"7bd0f511-77a0-4d27-b432-5fdc9439430d","username":"bluesnake674","name":"Xavier","surname":"Suarez","email":"xavier.suarez@example.com","phone":"952-078-384","is_vaccinated":"No", "qr":img},
-			{"uuid":"0a9358d1-178a-494e-93de-531514db229e","username":"beautifulostrich652","name":"Patricia","surname":"Sanz","email":"patricia.sanz@example.com","phone":"976-908-484","is_vaccinated":"No", "qr":img},
-			{"uuid":"e13927c1-47a0-4779-9ce6-5a37c0193453","username":"purplezebra636","name":"Begoña","surname":"Cabrera","email":"begona.cabrera@example.com","phone":"906-998-337","is_vaccinated":"No", "qr":img},
-			{"uuid":"118e7548-1b79-4b66-b825-039943646b44","username":"lazyduck473","name":"Cristobal","surname":"Gonzalez","email":"cristobal.gonzalez@example.com","phone":"992-606-319","is_vaccinated":"Sí", "qr":img},
-			{"uuid":"1258b58c-af0d-43be-88f3-e855977f02e1","username":"happyfish853","name":"Ivan","surname":"Herrera","email":"ivan.herrera@example.com","phone":"997-495-548","is_vaccinated":"Sí", "qr":img},
-			{"uuid":"505d764e-2884-4a1c-b429-1d7af496f96b","username":"redwolf440","name":"Alejandro","surname":"Hidalgo","email":"alejandro.hidalgo@example.com","phone":"943-200-617","is_vaccinated":"Sí", "qr":img},
-			{"uuid":"03438aad-71af-4774-bbca-7ba409bcac20","username":"whitecat392","name":"Pilar","surname":"Campos","email":"pilar.campos@example.com","phone":"989-550-930","is_vaccinated":"No", "qr":img}]
-		return exampleBS
+	def CompUser(self, name, surname):
+
+		try:
+			r = requests.get("http://localhost:8080/api/rest/users",
+			headers={"x-hasura-admin-secret":"myadminsecretkey"})
+
+			data = r.json()
+			lista=data.get("users")
+			i=0
+			if r.status_code!=200:
+				return([],r.status_code)
+			if name!="":
+				while lista[i]["uuid"]!=lista[-1]["uuid"]:
+					if lista[i]["name"].startswith(name.capitalize()):
+						i=i+1
+					else:
+						lista.remove(lista[i])
+						if i!=0:
+							i=i-1
+				if not lista[i]["name"].startswith(name.capitalize()):
+					lista.remove(lista[i])
+
+
+			i=0
+			if lista and surname!="":
+				while lista[i]["uuid"]!=lista[-1]["uuid"]:
+					if lista[i]["surname"].startswith(surname.capitalize()):
+						i=i+1
+					else:
+						lista.remove(lista[i])
+						if i!=0:
+							i=i-1
+				if not lista[i]["surname"].startswith(surname.capitalize()):
+					lista.remove(lista[i])
+
+			lista.sort(key=(lambda dict: sum(list(map(ord, dict.get("name")+dict.get("surname"))))))
+
+			return(lista,r.status_code)
+		except:
+			return([], 500)
 
 	def searchLogAcc(self, data):
-		exampleBS = [
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.5","timein":"2021-08-17 16:49:38",
-				"timeout":"2021-08-17 18:38:50", "facility":"Biblioteca Claudia Alonso"},
-			{"temperature":"36.8","timein":"2021-09-09 02:20:47",
-				"timeout":"2021-09-09 02:22:47", "facility":"Centro cultural Hector Martin"}]
-		return exampleBS
+		try:
+			r = requests.get(
+			  "http://localhost:8080/api/rest/user_access_log/"+str(data.get("uuid")),
+			  headers={"x-hasura-admin-secret":"myadminsecretkey"})
+			data = r.json()
+
+			listRows = data.get("access_log")
+
+			listLogAcc = []
+
+			for logIN in listRows:
+				if logIN.get("type") == "IN":
+					dateIN = datetime.fromisoformat(logIN.get("timestamp"))
+					faciIdIN = logIN.get("facility").get("id")
+					for logOUT in listRows:
+						if logOUT.get("type") == "OUT":
+							dateOUT = datetime.fromisoformat(logOUT.get("timestamp"))
+							faciIdOUT = logOUT.get("facility").get("id")
+
+							if dateIN < dateOUT and faciIdIN == faciIdOUT:
+								listLogAcc.append({"facility": logIN.get("facility"),
+									"timein": dateIN, "timeout": dateOUT, "temperature": logIN.get("temperature")})
+								break
+
+			listLogAcc.sort(key=(lambda dict: dict.get("timein").timestamp()))
+
+			return(listLogAcc, r.status_code)
+		except:
+			return([], 500)
 
 	def searchCont(self, data):
-		exampleBS = [
-			{"name": "A", "surname": "01", "time": "2021-08-17T16:49:38.277923+00:00",
-				"facility":"Centro cultural Hector Martin"},
-			{"name": "B", "surname": "02", "time": "2021-07-17T16:49:38.277923+00:00",
-				"facility":"Biblioteca Claudia Alonso"}]
-		return exampleBS
+		try:
+			listLogContAll = []
 
-	def filtrarCont(self, listLogContAllAll, dateIni, dateFin):
+			(listLogAcc, status) = self.searchLogAcc(data)
+
+			for logAcc in listLogAcc:
+				r = requests.get(
+					"http://localhost:8080/api/rest/facility_access_log/"+str(logAcc.get("facility").get("id"))+"/daterange",
+					headers={"x-hasura-admin-secret":"myadminsecretkey"},
+					json={"startdate": str(logAcc.get("timein")), "enddate": str(logAcc.get("timeout"))})
+				if r.status_code != 200:
+					return([], r.status_code)
+				datar = r.json()
+				listRows = datar.get("access_log")
+				i = 0
+				while i < len(listRows):
+					if listRows[i].get("user").get("uuid")==data.get("uuid"):
+						listRows.pop(i)
+						i -= 1
+					else:
+						listRows[i]["timestamp"] = datetime.fromisoformat(listRows[i].get("timestamp"))
+						listRows[i].update({"facility": logAcc.get("facility")})
+						typeLog = listRows[i].get("type")
+						listRows[i].pop("type")
+						if typeLog == "OUT":
+							listRows.pop(i)
+							i -= 1
+					i += 1
+				listLogContAll.extend(listRows)
+
+			return(listLogContAll, status)
+		except:
+			return([], 500)
+
+	def filtrarCont(self, listLogContAll, dateIni, dateFin):
 		newListLogCont = []
 
 		for logCont in listLogContAll:
-			date = logCont.get("time")
+			date = logCont.get("timestamp")
 
-			if(date >= dateIni and
-				date <= dateFin):
+			if(date.timestamp() >= dateIni.timestamp() and
+				date.timestamp() <= dateFin.timestamp()):
 				newListLogCont.append(logCont)
+
+		newListLogCont.sort(key=(lambda dict: dict.get("timestamp").timestamp()))
 
 		return newListLogCont
 
 
 
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> dda59035424458d5fbcc08c74564203b41c99420
-=======
-
-
-
->>>>>>> dda59035424458d5fbcc08c74564203b41c99420
-'''
-OBTENER TABLA
-def accesoBD(nombreTabla, pagina):
-	LIMIT = 2
-	offset = LIMIT*pagina
-	r = requests.get("http://localhost:8080/api/rest/"+nombreTabla+"?offset="+offset+"&limit="+LIMIT,
-     headers={"x-hasura-admin-secret":"myadminsecretkey"})
-	data = r.json()
-	return(data.get(nombreTabla))
-'''
 Controller()
-
 Gtk.main()
