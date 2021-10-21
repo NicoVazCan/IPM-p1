@@ -7,7 +7,43 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GdkPixbuf
 
 
-#model
+#model        PROBLEMA SI LE DAS A HOME PETA LA PAGINA DE RESULTADOS, HABLARLO CON NICO
+class Model:
+	def CompUser(self,name,surname):
+
+		r = requests.get("http://localhost:8080/api/rest/users",
+		headers={"x-hasura-admin-secret":"myadminsecretkey"})
+		data = r.json()
+		lista=data.get("users")
+		i=0
+
+		if name!="":
+			while lista[i]["uuid"]!=lista[-1]["uuid"]:
+				if lista[i]["name"].startswith(name.capitalize()):
+					i=i+1
+				else:
+					lista.remove(lista[i])
+					if i!=0:
+						i=i-1
+			if not lista[i]["name"].startswith(name.capitalize()):
+				lista.remove(lista[i])
+
+
+		i=0
+
+		if surname!="":
+			while lista[i]["uuid"]!=lista[-1]["uuid"]:
+				if lista[i]["surname"].startswith(surname.capitalize()):
+					i=i+1
+				else:
+					lista.remove(lista[i])
+					if i!=0:
+						i=i-1
+			if not lista[i]["surname"].startswith(surname.capitalize()):
+				lista.remove(lista[i])
+
+		return(lista)
+
 
 #view
 class PageStack:
@@ -39,13 +75,13 @@ class PageStack:
 			self.stack.set_visible_child(
 				self.stack.get_child_by_name(prevName))
 			self.stack.remove(act)
-			
+
 	def firstPage(self):
 		while(self.listPages):
 			self.prevPage()
 
-		
-		
+
+
 class View:
 	def clicked_btBack(self, widget):
 		self.pageStack.prevPage()
@@ -60,7 +96,7 @@ class View:
 		btHome = Gtk.Button.new_from_icon_name("go-home", Gtk.IconSize.MENU)
 		btHome.connect("clicked", self.clicked_btHome)
 		bxNaveg = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-		
+
 		whd.pack_start(btBack)
 		whd.pack_end(btHome)
 		bxNaveg.add(whd)
@@ -119,8 +155,13 @@ class View:
 
 		return bxGrid
 
+<<<<<<< HEAD
 	def CPageResult(self, name, surname, listData, funBtInfo, funBtCont):
 		MAX_USERS = 3
+=======
+	def CPageResult(self, listData, funBtInfo, funBtCont):
+		MAX_USERS = 7
+>>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 		bxCenter = Gtk.Box()
 		bxResult = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		bxCenter.pack_start(bxResult, True, False, 0)
@@ -312,21 +353,35 @@ class View:
 		window = Gtk.Window(title="Sistema de control de accesos Covid-19")
 		window.connect("destroy", Gtk.main_quit)
 		wbx = Gtk.Box(spacing=10, orientation=Gtk.Orientation.VERTICAL)
-		wbx.add(self.CCabecera())	
+
+		window.connect('delete-event' , Gtk.main_quit)#añadi esto que sino no se cerraba aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+		wbx.add(self.CCabecera())
 		skPages = Gtk.Stack()
 		wbx.pack_start(skPages, True, True, 0)
 		self.pageStack = PageStack(skPages, window)
 		window.add(wbx)
-		
 
 #controller
 class Controller:
+<<<<<<< HEAD
 	def showUsers(self, widget, get_name, get_surname):
 		nameSearch = get_name().strip()
 		surnameSearch = get_surname().strip()
 		self.view.CPageResult(
 			nameSearch, surnameSearch, 
 			self.model.searchUsers(nameSearch, surnameSearch),
+=======
+	def searchUser(self, widget, get_name, get_surname):#poner get_name() para obtener string, get_name no va
+
+		name=get_name()
+		surname=get_surname()
+
+		lista=self.model.CompUser(name,surname)
+
+
+		self.view.CPageResult(lista,
+>>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 			self.showInfo, self.showCont)
 
 	def showInfo(self, widget, dataUser):
@@ -346,6 +401,7 @@ class Controller:
 			
 
 	def __init__(self):
+		self.model= Model()
 		self.view = View()
 		self.model = Model()
 		self.view.CPageSearch(self.showUsers)
@@ -434,12 +490,18 @@ class Model:
 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> dda59035424458d5fbcc08c74564203b41c99420
 '''
-OBTENER TABLA 
+OBTENER TABLA
 def accesoBD(nombreTabla, pagina):
 	LIMIT = 2
 	offset = LIMIT*pagina
-	r = requests.get("http://localhost:8080/api/rest/"+nombreTabla+"?offset="+offset+"&limit="+LIMIT, 
+	r = requests.get("http://localhost:8080/api/rest/"+nombreTabla+"?offset="+offset+"&limit="+LIMIT,
      headers={"x-hasura-admin-secret":"myadminsecretkey"})
 	data = r.json()
 	return(data.get(nombreTabla))
@@ -447,4 +509,3 @@ def accesoBD(nombreTabla, pagina):
 Controller()
 
 Gtk.main()
-
