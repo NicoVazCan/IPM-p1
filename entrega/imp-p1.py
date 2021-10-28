@@ -129,7 +129,7 @@ class View:
 					p+=1
 
 				fmResNum = Gtk.Frame()
-				fmResNum.add(Gtk.Label(label=str(u)))
+				fmResNum.add(Gtk.Label(label=str(u+1)))
 				fbUsers.add(fmResNum)
 
 				fmResNSN = Gtk.Frame()
@@ -204,7 +204,10 @@ class View:
 		aux = Gtk.Label(label="Vacunado:")
 		aux.set_halign(Gtk.Align.START)
 		gdDataUser.attach(aux, 0,4,1,1)
-		aux = Gtk.Label(label=dataUser.get("is_vaccinated"))
+		if dataUser.get("is_vaccinated"):
+			aux = Gtk.Label(label="Sí")
+		else:
+			aux = Gtk.Label(label="No")
 		aux.set_halign(Gtk.Align.START)
 		gdDataUser.attach(aux, 1,4,1,1)
 		gdDataUser.attach(self.QrWidget(dataUser), 2,1,3,3)
