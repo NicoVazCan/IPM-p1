@@ -2,11 +2,12 @@
 import gi
 import requests
 import qrcode
-from datetime import datetime
+import datetime
 import tempfile
+import threading
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gtk, GdkPixbuf, GLib
 
 
 #view
@@ -22,6 +23,8 @@ class PageStack:
 		self.stack = stack
 
 	def newPage(self, page, pageName):
+		if self.stack.get_child_by_name(pageName):
+			return
 		actName = self.stack.get_visible_child_name()
 		if(actName != None):
 			self.listPages.append(actName)
@@ -44,10 +47,16 @@ class PageStack:
 
 class View:
 	def clicked_btBack(self, widget):
-		self.pageStack.prevPage()
+		if(self.is_loading()):
+			self.loading(False)
+		else:
+			self.pageStack.prevPage()
 
 	def clicked_btHome(self, widget):
-		self.pageStack.firstPage()
+		if(self.is_loading()):
+			self.loading(False)
+		else:
+			self.pageStack.firstPage()
 
 	def CCabecera(self):
 		whd = Gtk.HeaderBar()
@@ -56,8 +65,12 @@ class View:
 		btHome = Gtk.Button.new_from_icon_name("go-home", Gtk.IconSize.MENU)
 		btHome.connect("clicked", self.clicked_btHome)
 		bxNaveg = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		self.lkWait = threading.Lock()
+		self.spWait = Gtk.Spinner()
+		self.blWait = False
 
 		whd.pack_start(btBack)
+		whd.set_custom_title(self.spWait)
 		whd.pack_end(btHome)
 		bxNaveg.add(whd)
 		return bxNaveg
@@ -221,7 +234,6 @@ class View:
 		fbColumnName.set_max_children_per_line(4)
 		fbColumnName.set_min_children_per_line(4)
 		fbColumnName.set_homogeneous(True)
-		#fbColumnName.set_column_spacing(20)
 		fbColumnName.set_selection_mode(Gtk.SelectionMode.NONE)
 		bxLogAcc.pack_start(fbColumnName, False, False, 0)
 
@@ -270,15 +282,51 @@ class View:
 		bxCenter.show_all()
 		self.pageStack.newPage(bxCenter, "Info")
 
-	def CalendarUpdate(self, widget, skDest, cdDesde, cdHasta,
+
+	def EntryUpdate(self, widget, skDest,
+		etDesde, etHasta, cdDesde, cdHasta,
+		dataUser, listLogContAll, funGetListFiltrada):
+		dtDesde = None
+		dtHasta = None
+		try:
+			dtDesde = datetime.datetime.strptime(etDesde.get_text(), '%d/%m/%y')
+			dtDesde = dtDesde.replace(tzinfo=datetime.timezone.utc)
+			dtHasta = datetime.datetime.strptime(etHasta.get_text(), '%d/%m/%y')
+			dtHasta = dtHasta.replace(tzinfo=datetime.timezone.utc)
+		except:
+			self.contResult(skDest, dtDesde, dtHasta,
+				listLogContAll, funGetListFiltrada)
+			return
+
+		cdDesde.select_month(dtDesde.month-1, dtDesde.year)
+		cdDesde.select_day(dtDesde.day)
+		cdHasta.select_month(dtHasta.month-1, dtHasta.year)
+		cdHasta.select_day(dtHasta.day)
+		
+
+
+
+	def CalendarUpdate(self, widget, skDest,
+		etDesde, etHasta, cdDesde, cdHasta,
 		dataUser, listLogContAll, funGetListFiltrada):
 		(year, month, day) = cdDesde.get_date()
 		month += 1
-		dtDesde = datetime(year, month, day)
+		dtDesde = datetime.datetime(year, month, day, tzinfo=datetime.timezone.utc)
 		(year, month, day) = cdHasta.get_date()
 		month += 1
-		dtHasta = datetime(year, month, day)
+		dtHasta = datetime.datetime(year, month, day, tzinfo=datetime.timezone.utc)
 
+		etDesde.set_text(dtDesde.strftime('%d/%m/%y'))
+		etHasta.set_text(dtHasta.strftime('%d/%m/%y'))
+
+		self.contResult(skDest, dtDesde, dtHasta,
+			listLogContAll, funGetListFiltrada)
+
+
+
+
+	def contResult(self, skDest, dtDesde, dtHasta,
+		listLogContAll, funGetListFiltrada):
 		prevChild = skDest.get_visible_child()
 		bxDest = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		skDest.add(bxDest)
@@ -290,7 +338,9 @@ class View:
 
 		if(newListLogCont == []):
 			lbMsg = Gtk.Label()
-			if(dtHasta < dtDesde):
+			if(not(dtDesde) or not(dtHasta)):
+				lbMsg.set_label("La fecha escrita no es correcta.")
+			elif(dtHasta < dtDesde):
 				lbMsg.set_label("Debe poner una fecha desde donde quiere buscar anterior a la de hasta.")
 			else:
 				lbMsg.set_label("No se encontró nada entre esas fechas.")
@@ -350,40 +400,65 @@ class View:
 		bxCenter = Gtk.Box()
 		bxCont = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		bxFecha = Gtk.Box()
-		dtToday = datetime.today()
+		dtHasta = datetime.datetime.now(tz=datetime.timezone.utc)
+		dtDesde = dtHasta - datetime.timedelta(days=28)
 
 		bxCont.add(Gtk.Label(
 			label="Contactos de "+
 				dataUser.get("name")+" "+
 				dataUser.get("surname")))
 
-		edDesde = Gtk.Expander(label="Ver desde:")
+		gdDesde = Gtk.Grid()
+		lbDesde = Gtk.Label(label="Fecha desde:")
+		lbDesde.set_halign(Gtk.Align.START)
+		gdDesde.attach(lbDesde,0,0,1,1)
+		etDesde = Gtk.Entry()
+		etDesde.set_text(dtDesde.strftime('%d/%m/%y'))
+		gdDesde.attach(etDesde,0,1,1,1)
+		edDesde = Gtk.Expander(label="Con calendario")
+		gdDesde.attach(edDesde,0,2,1,1)
 		cdDesde = Gtk.Calendar()
 		edDesde.add(cdDesde)
-		cdDesde.select_day(dtToday.day)
-		cdDesde.select_month((dtToday.month-2)%12, dtToday.year)
-		bxFecha.pack_start(edDesde, False, False, 60)
+		cdDesde.select_day(dtDesde.day)
+		cdDesde.select_month(dtDesde.month-1, dtDesde.year)
+		bxFecha.pack_start(gdDesde, False, False, 0)
 
-		edHasta = Gtk.Expander(label="Ver hasta:")
+		gdHasta = Gtk.Grid()
+		lbHasta = Gtk.Label(label="Fecha hasta:")
+		lbHasta.set_halign(Gtk.Align.START)
+		gdHasta.attach(lbHasta,0,0,1,1)
+		etHasta = Gtk.Entry()
+		etHasta.set_text(dtHasta.strftime('%d/%m/%y'))
+		gdHasta.attach(etHasta,0,1,1,1)
+		edHasta = Gtk.Expander(label="Con calendario")
+		gdHasta.attach(edHasta,0,2,1,1)
 		cdHasta = Gtk.Calendar()
 		edHasta.add(cdHasta)
-		cdHasta.select_day(dtToday.day)
-		cdHasta.select_month((dtToday.month-1)%12, dtToday.year)
-		bxFecha.pack_end(edHasta, False, False, 60)
+		cdHasta.select_day(dtHasta.day)
+		cdHasta.select_month(dtHasta.month-1, dtHasta.year)
+		bxFecha.pack_end(gdHasta, False, False, 0)
 		bxCont.add(bxFecha)
 
 		fmLogCont = Gtk.Frame(label="Registro de contactos")
 		skLogCont = Gtk.Stack()
 		fmLogCont.add(skLogCont)
-		bxCont.pack_start(fmLogCont, False, False, 20)
+		bxCont.pack_start(fmLogCont, False, False, 10)
 
-		cdDesde.connect("day-selected", self.CalendarUpdate, skLogCont,
-			cdDesde, cdHasta, dataUser, listLogContAll, funGetListFiltrada)
-		cdHasta.connect("day-selected", self.CalendarUpdate, skLogCont,
-			cdDesde, cdHasta, dataUser, listLogContAll, funGetListFiltrada)
-
-		self.CalendarUpdate(None, skLogCont, cdDesde, cdHasta,
+		etDesde.connect("activate", self.EntryUpdate, skLogCont,
+			etDesde, etHasta, cdDesde, cdHasta, dataUser,
+			listLogContAll, funGetListFiltrada)
+		etHasta.connect("activate", self.EntryUpdate, skLogCont,
+			etDesde, etHasta, cdDesde, cdHasta,
 			dataUser, listLogContAll, funGetListFiltrada)
+		cdDesde.connect("day-selected", self.CalendarUpdate, skLogCont,
+			etDesde, etHasta, cdDesde, cdHasta,
+			dataUser, listLogContAll, funGetListFiltrada)
+		cdHasta.connect("day-selected", self.CalendarUpdate, skLogCont,
+			etDesde, etHasta, cdDesde, cdHasta,
+			dataUser, listLogContAll, funGetListFiltrada)
+
+		self.contResult(skLogCont, dtDesde, dtHasta,
+			listLogContAll, funGetListFiltrada)
 
 		bxCont.show_all()
 		self.pageStack.newPage(bxCont, "Contactos")
@@ -414,6 +489,18 @@ class View:
 		bxError.show_all()
 		self.pageStack.newPage(bxError, "Error")
 
+	def loading(self, activate):
+		self.lkWait.acquire()
+		self.blWait = activate
+		if activate:
+			self.spWait.start()
+		else:
+			self.spWait.stop()
+		self.lkWait.release()
+
+	def is_loading(self):
+		return self.blWait
+
 
 	def __init__(self):
 		window = Gtk.Window(title="Sistema de control de accesos Covid-19")
@@ -433,34 +520,63 @@ class Controller:
 	def showUsers(self, widget, get_name, get_surname):
 		nameSearch = get_name().strip()
 		surnameSearch = get_surname().strip()
-		(lista,status)=self.model.CompUser(nameSearch, surnameSearch)
+
+		if not(self.view.is_loading()):
+			self.view.loading(True)
+			
+			threading.Thread(target=self.threadShowUsers,
+				args=(nameSearch, surnameSearch), daemon=True).start()
+
+	def threadShowUsers(self, nameSearch, surnameSearch):
+		(lista,status) = self.model.CompUser(nameSearch, surnameSearch)
+		if self.view.is_loading():
+			self.view.loading(False)
+		else:
+			return
 
 		if status!=200:
-			self.view.CPageError(status)
+			GLib.idle_add(lambda: self.view.CPageError(status))
 		else:
-			self.view.CPageResult(nameSearch, surnameSearch,
-				lista,
-				self.showInfo, self.showCont)
+			GLib.idle_add(lambda: self.view.CPageResult(nameSearch, surnameSearch,
+				lista, self.showInfo, self.showCont))
 
 	def showInfo(self, widget, dataUser):
+		if not(self.view.is_loading()):
+			self.view.loading(True)
+			threading.Thread(target=self.threadShowInfo,
+					kwargs={'dataUser': dataUser}, daemon=True).start()
+
+	def threadShowInfo(self, dataUser):
 		(lista,status) = self.model.searchLogAcc(dataUser)
+		if self.view.is_loading():
+			self.view.loading(False)
+		else:
+			return
 
 		if status!=200:
-			self.view.CPageError(status)
+			GLib.idle_add(lambda: self.view.CPageError(status))
 		else:
-			self.view.CPageInfo(dataUser, lista)
+			GLib.idle_add(lambda: self.view.CPageInfo(dataUser, lista))
 
 	def showCont(self, widget, dataUser):
+		if not(self.view.is_loading()):
+			self.view.loading(True)
+			threading.Thread(target=self.threadShowCont,
+					kwargs={'dataUser': dataUser}, daemon=True).start()
+
+	def threadShowCont(self, dataUser):
 		(lista,status) = self.model.searchCont(dataUser)
+		if self.view.is_loading():
+			self.view.loading(False)
+		else:
+			return
 
 		if status!=200:
-			self.view.CPageError(status)
+			GLib.idle_add(lambda: self.view.CPageError(status))
 		else:
-			self.view.CPageCont(dataUser, lista, self.giveCont)
+			GLib.idle_add(lambda: self.view.CPageCont(dataUser, lista, self.giveCont))
 
 	def giveCont(self, listLogContAll, dateIni, dateFin):
-
-
 		return self.model.filtrarCont(listLogContAll, dateIni, dateFin)
 
 
@@ -530,11 +646,11 @@ class Model:
 
 			for logIN in listRows:
 				if logIN.get("type") == "IN":
-					dateIN = datetime.fromisoformat(logIN.get("timestamp"))
+					dateIN = datetime.datetime.fromisoformat(logIN.get("timestamp"))
 					faciIdIN = logIN.get("facility").get("id")
 					for logOUT in listRows:
 						if logOUT.get("type") == "OUT":
-							dateOUT = datetime.fromisoformat(logOUT.get("timestamp"))
+							dateOUT = datetime.datetime.fromisoformat(logOUT.get("timestamp"))
 							faciIdOUT = logOUT.get("facility").get("id")
 
 							if dateIN < dateOUT and faciIdIN == faciIdOUT:
@@ -569,7 +685,7 @@ class Model:
 						listRows.pop(i)
 						i -= 1
 					else:
-						listRows[i]["timestamp"] = datetime.fromisoformat(listRows[i].get("timestamp"))
+						listRows[i]["timestamp"] = datetime.datetime.fromisoformat(listRows[i].get("timestamp"))
 						listRows[i].update({"facility": logAcc.get("facility")})
 						typeLog = listRows[i].get("type")
 						listRows[i].pop("type")
@@ -589,8 +705,10 @@ class Model:
 		for logCont in listLogContAll:
 			date = logCont.get("timestamp")
 
-			if(date.timestamp() >= dateIni.timestamp() and
-				date.timestamp() <= dateFin.timestamp()):
+			if(date and dateIni and
+				dateFin and
+				date >= dateIni and
+				date <= dateFin):
 				newListLogCont.append(logCont)
 
 		newListLogCont.sort(key=(lambda dict: dict.get("timestamp").timestamp()))
