@@ -65,9 +65,7 @@ class View:
 		btHome = Gtk.Button.new_from_icon_name("go-home", Gtk.IconSize.MENU)
 		btHome.connect("clicked", self.clicked_btHome)
 		bxNaveg = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-		self.lkWait = threading.Lock()
 		self.spWait = Gtk.Spinner()
-		self.blWait = False
 
 		whd.pack_start(btBack)
 		whd.set_custom_title(self.spWait)
@@ -489,17 +487,11 @@ class View:
 		bxError.show_all()
 		self.pageStack.newPage(bxError, "Error")
 
-	def loading(self, activate):
-		self.lkWait.acquire()
-		self.blWait = activate
-		if activate:
-			self.spWait.start()
-		else:
-			self.spWait.stop()
-		self.lkWait.release()
+	def loading(self, active):
+		self.spWait.props.active = active
 
 	def is_loading(self):
-		return self.blWait
+		return self.spWait.props.active
 
 
 	def __init__(self):
@@ -523,22 +515,20 @@ class Controller:
 
 		if not(self.view.is_loading()):
 			self.view.loading(True)
-			
 			threading.Thread(target=self.threadShowUsers,
 				args=(nameSearch, surnameSearch), daemon=True).start()
 
 	def threadShowUsers(self, nameSearch, surnameSearch):
 		(lista,status) = self.model.CompUser(nameSearch, surnameSearch)
-		if self.view.is_loading():
-			self.view.loading(False)
-		else:
-			return
 
 		if status!=200:
-			GLib.idle_add(lambda: self.view.CPageError(status))
+			GLib.idle_add(lambda: self.view.is_loading() and 
+				(self.view.loading(False) or self.view.CPageError(status)))
 		else:
-			GLib.idle_add(lambda: self.view.CPageResult(nameSearch, surnameSearch,
-				lista, self.showInfo, self.showCont))
+			GLib.idle_add(lambda: self.view.is_loading() and 
+				(self.view.loading(False) or 
+					self.view.CPageResult(nameSearch, surnameSearch,
+						lista, self.showInfo, self.showCont)))
 
 	def showInfo(self, widget, dataUser):
 		if not(self.view.is_loading()):
@@ -548,15 +538,13 @@ class Controller:
 
 	def threadShowInfo(self, dataUser):
 		(lista,status) = self.model.searchLogAcc(dataUser)
-		if self.view.is_loading():
-			self.view.loading(False)
-		else:
-			return
 
 		if status!=200:
-			GLib.idle_add(lambda: self.view.CPageError(status))
+			GLib.idle_add(lambda: self.view.is_loading() and 
+				(self.view.loading(False) or self.view.CPageError(status)))
 		else:
-			GLib.idle_add(lambda: self.view.CPageInfo(dataUser, lista))
+			GLib.idle_add(lambda: self.view.is_loading() and 
+				(self.view.loading(False) or self.view.CPageInfo(dataUser, lista)))
 
 	def showCont(self, widget, dataUser):
 		if not(self.view.is_loading()):
@@ -566,15 +554,14 @@ class Controller:
 
 	def threadShowCont(self, dataUser):
 		(lista,status) = self.model.searchCont(dataUser)
-		if self.view.is_loading():
-			self.view.loading(False)
-		else:
-			return
 
 		if status!=200:
-			GLib.idle_add(lambda: self.view.CPageError(status))
+			GLib.idle_add(lambda: self.view.is_loading() and 
+				(self.view.loading(False) or self.view.CPageError(status)))
 		else:
-			GLib.idle_add(lambda: self.view.CPageCont(dataUser, lista, self.giveCont))
+			GLib.idle_add(lambda: self.view.is_loading() and 
+				(self.view.loading(False) or 
+					self.view.CPageCont(dataUser, lista, self.giveCont)))
 
 	def giveCont(self, listLogContAll, dateIni, dateFin):
 		return self.model.filtrarCont(listLogContAll, dateIni, dateFin)
