@@ -265,6 +265,11 @@ def UiContFiltrarHasta(app, day, month, year):
 	texts[0].set_text_contents(str(day)+'/'+str(month)+'/'+str(year))
 	do(texts[0], 'activate')
 
+def step_la_interface_sigue_respondiendo(app: Atspi.Object) -> None:
+    # ELiminamos el timeout de arrancar la app
+    Atspi.set_timeout(800, -1)
+    assert app.get_name() != "", "La interface no responde"
+
 
 process, app = run("./imp-p1.py")
 
@@ -289,6 +294,7 @@ time.sleep(1)
 UiInicio(app)
 time.sleep(1)
 dump(app)
+step_la_interface_sigue_respondiendo(app)
 
 '''
 MAX_USERS = 10
